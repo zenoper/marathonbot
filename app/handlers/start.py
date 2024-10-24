@@ -16,8 +16,12 @@ entry_router = Router()
 
 @entry_router.message(CommandStart())
 async def send_welcome(message: Message, state: FSMContext):
-    await message.answer(f"Welcome, {message.from_user.full_name}! 🙂\n \nPlease, fill in your full name!")
-    await state.set_state(UserState.fullname)
+    if str(message.from_user.id) in ADMIN:
+        await state.clear()
+        await message.reply(f"Welcome on board, Captain! \n\nHere are your commands: \n\n/export_all - export user info \n/fill_form - fill in the form")
+    else:
+        await message.answer(f"Welcome, {message.from_user.full_name}! 🙂\n \nPlease, fill in your full name!")
+        await state.set_state(UserState.fullname)
 
 
 @entry_router.message(UserState.fullname)
@@ -139,11 +143,20 @@ async def sat(message: Message, state: FSMContext):
     if message.content_type == ContentType.TEXT:
         if message.text == "Skip":
             await state.update_data({'SAT': "None"})
+            await message.answer("What is your IELTS score? \n\nIf you don't have one, click 'Skip' button",
+                                 reply_markup=keyboards.skip)
+            await state.set_state(UserState.IELTS)
         else:
-            await state.update_data({'SAT': message.text})
-        await message.answer("What is your IELTS score? \n\nIf you don't have one, click 'Skip' button",
-                             reply_markup=keyboards.skip)
-        await state.set_state(UserState.IELTS)
+            try:
+                if int(message.text) <= 1600:
+                    await state.update_data({'SAT': int(message.text)})
+                    await message.answer("What is your IELTS score? \n\nIf you don't have one, click 'Skip' button",
+                                         reply_markup=keyboards.skip)
+                    await state.set_state(UserState.IELTS)
+                else:
+                    await message.answer("Certainly can't be more than 1600 :) !")
+            except Exception as e:
+                await message.answer("Only numbers accepted!")
     else:
         await message.answer("Only text accepted!")
 
@@ -153,11 +166,20 @@ async def sat(message: Message, state: FSMContext):
     if message.content_type == ContentType.TEXT:
         if message.text == "Skip":
             await state.update_data({'IELTS': "None"})
+            await message.answer("What is your Duolingo score? \n\nIf you don't have one, click 'Skip' button",
+                                 reply_markup=keyboards.skip)
+            await state.set_state(UserState.Duolingo)
         else:
-            await state.update_data({'IELTS': message.text})
-        await message.answer("What is your Duolingo score? \n\nIf you don't have one, click 'Skip' button",
-                             reply_markup=keyboards.skip)
-        await state.set_state(UserState.Duolingo)
+            try:
+                if int(message.text) <= 9:
+                    await state.update_data({'IELTS': message.text})
+                    await message.answer("What is your Duolingo score? \n\nIf you don't have one, click 'Skip' button",
+                                         reply_markup=keyboards.skip)
+                    await state.set_state(UserState.Duolingo)
+                else:
+                    await message.answer("Certainly can't be more than 9 :) !")
+            except Exception as e:
+                await message.answer("Only numbers accepted!")
     else:
         await message.answer("Only text accepted!")
 
@@ -167,11 +189,21 @@ async def sat(message: Message, state: FSMContext):
     if message.content_type == ContentType.TEXT:
         if message.text == "Skip":
             await state.update_data({'Duolingo': "None"})
+            await message.answer(
+                "Do you have any previous Visa Rejections? \n\nIf yes, write how many and when.\n\nIf not, click 'Skip' button",
+                reply_markup=keyboards.skip)
+            await state.set_state(UserState.visa)
         else:
-            await state.update_data({'Duolingo': message.text})
-        await message.answer("Do you have any previous Visa Rejections? \n\nIf yes, write how many and when.\n\nIf not, click 'Skip' button",
-                             reply_markup=keyboards.skip)
-        await state.set_state(UserState.visa)
+            try:
+                if int(message.text) <= 160:
+                    await state.update_data({'Duolingo': message.text})
+                    await message.answer("Do you have any previous Visa Rejections? \n\nIf yes, write how many and when.\n\nIf not, click 'Skip' button",
+                                         reply_markup=keyboards.skip)
+                    await state.set_state(UserState.visa)
+                else:
+                    await message.answer("Can't be more than 160 :( !")
+            except Exception as e:
+                await message.answer("Only numbers accepted!")
     else:
         await message.answer("Only text accepted!")
 
@@ -252,9 +284,9 @@ async def sat(message: Message, state: FSMContext):
                     phone_number=user_data.get("phone_number"),
                     grade=user_data.get("grade"),
                     public_private=user_data.get("public_private"),
-                    SAT=user_data.get("SAT"),
-                    IELTS=user_data.get("IELTS"),
-                    Duolingo=user_data.get("Duolingo"),
+                    SAT=str(user_data.get("SAT")),
+                    IELTS=str(user_data.get("IELTS")),
+                    Duolingo=str(user_data.get("Duolingo")),
                     visa_rejection=user_data.get("visa_rejection"),
                     travel_history=user_data.get("travel_history"),
                     average_funding=user_data.get("average_funding"),

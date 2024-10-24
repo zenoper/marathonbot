@@ -20,13 +20,17 @@ db = Database()
 async def main():
     from app.handlers.start import entry_router
     from app.handlers.export_all import export_router
+    from app.handlers.fill_form import fill_form_router
+    from app.handlers.help import help_router
     await db.create()
     # await db.drop_users()
     await db.create_table_users()
     await on_startup(bot)
     await set_default_commands(bot)
 
+    dp.include_router(help_router)
     dp.include_router(entry_router)
+    dp.include_router(fill_form_router)
     dp.include_router(export_router)
     dp.message.outer_middleware(ThrottlingMiddleware(limit=2, interval=1))
     await dp.start_polling(bot)

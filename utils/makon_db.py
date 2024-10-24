@@ -26,7 +26,6 @@ class Database:
                       fetchrow: bool = False,
                       execute: bool = False
                       ):
-
         if self.pool is None:
             await self.create()
 
@@ -34,14 +33,24 @@ class Database:
             connection: Connection
             async with connection.transaction():
                 if fetch:
-                    result = await connection.fetch(command, *args)
+                    records = await connection.fetch(command, *args)
+                    if records:
+                        # Get column names from your table structure
+                        columns = ['id', 'full_name', 'date_of_birth', 'phone_number',
+                                   'grade', 'public_private', 'SAT', 'IELTS', 'Duolingo',
+                                   'visa_rejection', 'travel_history', 'average_funding',
+                                   'username', 'telegram_id']
+                        # Convert records to list of values
+                        data = [list(record.values()) for record in records]
+                        return columns, data
+                    return None
                 elif fetchval:
                     result = await connection.fetchval(command, *args)
                 elif fetchrow:
                     result = await connection.fetchrow(command, *args)
                 elif execute:
                     result = await connection.execute(command, *args)
-            return result
+                return result
 
     async def create_table_users(self):
         sql = """
@@ -58,8 +67,8 @@ class Database:
         visa_rejection VARCHAR(255) NOT NULL,
         travel_history VARCHAR(255) NOT NULL,
         average_funding VARCHAR(255) NOT NULL,
-        username varchar(255) NOT NULL UNIQUE,
-        telegram_id BIGINT NOT NULL UNIQUE
+        username varchar(255) NOT NULL,
+        telegram_id BIGINT NOT NULL
         );
         """
         await self.execute(sql, execute=True)

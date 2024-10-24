@@ -6,6 +6,7 @@ async def set_default_commands(bot: Bot):
     await bot.set_my_commands(
         [
             BotCommand(command="start", description="Restart the bot!"),
-            BotCommand(command="help", description="Get Help!"),
+            BotCommand(command="help", description="See available commands!"),
+            BotCommand(command="fill_form", description="Fill in the form!"),
         ]
     )

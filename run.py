@@ -5,7 +5,7 @@ import asyncio
 import logging
 from dataclasses import dataclass
 
-from marathonbot.config import BOT_TOKEN, MAIN_CHANNEL_ID, PRIVATE_CHANNEL_LINK, REQUIRED_REFERRALS, DB_PORT, DB_HOST, DB_USER, DB_NAME, DB_PASS, ADMIN
+from marathonbot.config import BOT_TOKEN, MAIN_CHANNEL_ID, PRIVATE_CHANNEL_ID, REQUIRED_REFERRALS, DB_PORT, DB_HOST, DB_USER, DB_NAME, DB_PASS, ADMIN
 
 import config as Config
 from utils.notify_admin import on_startup, on_shutdown

@@ -2,7 +2,7 @@ import logging
 
 from aiogram import Bot
 
-from config import ADMIN
+from marathonbot.config import ADMIN
 
 
 async def on_startup(bot: Bot):

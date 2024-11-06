@@ -5,8 +5,7 @@ from aiogram.types import BotCommand
 async def set_default_commands(bot: Bot):
     await bot.set_my_commands(
         [
-            BotCommand(command="start", description="Restart the bot!"),
-            BotCommand(command="help", description="See available commands!"),
-            BotCommand(command="fill_form", description="Fill in the form!"),
+            BotCommand(command="start", description="Restart the bot"),
+            BotCommand(command="check_referrals", description="Check my status"),
         ]
     )

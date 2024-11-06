@@ -6,7 +6,7 @@ from asyncpg.pool import Pool
 from datetime import datetime, timedelta
 from typing import Optional
 
-import marathonbot.config as Config
+import config as Config
 
 
 class Database:

@@ -4,8 +4,8 @@ from aiogram.types import InlineKeyboardButton
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from datetime import datetime, timedelta
 
-from marathonbot import config as Config
-from marathonbot.utils.postgresql import Database
+import config as Config
+from utils.postgresql import Database
 
 from aiogram.types import ChatJoinRequest
 

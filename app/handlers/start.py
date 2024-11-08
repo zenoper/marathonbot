@@ -1,4 +1,5 @@
 from aiogram import Bot, Router, types
+from aiogram.enums import ParseMode
 from aiogram.filters import Command
 from aiogram.types import InlineKeyboardButton
 from aiogram.utils.keyboard import InlineKeyboardBuilder
@@ -8,6 +9,7 @@ import config as Config
 from utils.postgresql import Database
 
 from aiogram.types import ChatJoinRequest
+from aiogram.utils.markdown import bold, code, text, link, underline
 
 
 class ReferralBot:
@@ -56,11 +58,10 @@ class ReferralBot:
 
         # Get user's link stats
         stats = await self.db.get_link_stats(user_id)
-        print(f"User stats: {stats}")
 
         if stats['link_id']:
             # If there's an existing link, verify it's still valid
-            invite_link = stats['link_id']
+            invite_link = f"https://t.me/{stats['link_id']}"
         else:
             invite_link = await self.create_invite_link(user_id)
 
@@ -77,20 +78,30 @@ class ReferralBot:
             f"✅ Total referrals: {stats['referral_count']}"
         )
 
-        await message.answer(
-            f"Welcome to the Marathon!\n\n"
-            f"Share this link with others: {invite_link}\n\n"
-            f"Your stats:\n{stats_text}\n\n"
-            f"When {Config.REQUIRED_REFERRALS} people join through your links, "
-            f"you'll get access to the private channel!\n\n"
-            f"⚠️ Each link expires in 7 days.",
-            reply_markup=builder.as_markup()
-        )
+        # await message.answer(
+        #     text=f"'3 Free SAT seats + 3 day SAT Marathon'\n\n"
+        #     f"📣Farg'onadagi eng katta SAT markazlardan biri 'Master SAT'dan bomba yangilik💣💣\n\n"
+        #     f"SATdan 1500 olgan Farg'onaning eng malakali SAT Mentorlaridan biri Abdulahad teacher bu marafonda barcha sirlarni ochadi.🎙\n\n"
+        #     f"Bu marafondan keyin SAT balingizni bemalol 100-200 balga oshirsangiz bo'ladi.💥 \n\n"
+        #     f"Shoshmang, bu xali hammasi emas \n\n"
+        #     f"3 kunlik marafonimizda har kuni bittadan FREE SAT SEAT o'ynaymiz. 💎 \nHar kunlik Masterklassdan keyin darsda qatnashgan bir kishiga o'zi xohlagan SAT imtixon sanasiga bepulga registratsiya qilib beramiz. \nBunaqasi xali O'zbekistonda bo'lmagan.\n\n"
+        #     f"Bunday imkoniyatni qo'ldan boy bermang⚡️",
+        #     reply_markup=builder.as_markup()
+        #)
+
+        await message.answer_photo(photo="https://imgur.com/a/RWiGy2r",
+                                   caption=f"<b>'3 Free SAT seats + 3 day SAT Marathon'</b>\n\n"
+            f"📣Farg'onadagi eng katta SAT markazlardan biri 'Master SAT'dan bomba yangilik💣💣\n\n"
+            f"<u>Bu marafondan keyin SAT balingizni bemalol 100-200 balga oshirsangiz bo'ladi.</u>💥 \n\n"
+            f"<i>Shoshmang, bu xali hammasi emas</i>\n\n"
+            f"<blockquote>3 kunlik marafonimizda har kuni bittadan FREE SAT SEAT o'ynaymiz. 💎 \nHar kunlik Masterklassdan keyin darsda qatnashgan bir kishiga o'zi xohlagan SAT imtixon sanasiga bepulga registratsiya qilib beramiz. \nBunaqasi xali O'zbekistonda bo'lmagan.</blockquote>\n\n"
+            f"Bunday imkoniyatni qo'ldan boy bermang⚡️\n\n"
+            f"{invite_link}",
+                                    reply_markup=builder.as_markup(), parse_mode=ParseMode.HTML)
 
     async def handle_new_member(self, event: ChatJoinRequest):
         user_id = event.from_user.id
         chat_id = event.chat.id
-        print(event)
 
         try:
             invite_link = event.invite_link

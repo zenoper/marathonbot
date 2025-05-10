@@ -28,7 +28,7 @@ async def main():
     dp = Dispatcher(storage=storage)
     # Initialize database
     db = await Database.create()
-    # await db.delete_db()
+    await db.delete_db()
     await db.init_db()
 
     await on_startup(bot)

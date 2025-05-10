@@ -22,8 +22,9 @@ class ReferralBot:
 
     def setup_handlers(self):
         self.router.message.register(self.start_command, Command("start"))
-        self.router.callback_query.register(self.check_referrals, lambda c: c.data == "check_referrals")
-        self.router.message.register(self.check_refers, Command("check_referrals"))
+        self.router.callback_query.register(self.check_referrals, lambda c: c.data == "check_my_referrals")
+        self.router.message.register(self.check_refers, Command("check_my_referrals"))
+        self.router.message.register(self.top_referrers, Command("top_referrers"))
         # Change this line to register for chat join requests
         self.router.chat_join_request.register(self.handle_new_member)
 
@@ -69,7 +70,7 @@ class ReferralBot:
         builder = InlineKeyboardBuilder()
         builder.add(InlineKeyboardButton(
             text="Check My Referrals",
-            callback_data="check_referrals"
+            callback_data="check_my_referrals"
         ))
 
         stats_text = (
@@ -89,13 +90,15 @@ class ReferralBot:
         #     reply_markup=builder.as_markup()
         #)
 
-        await message.answer_photo(photo="https://imgur.com/a/RWiGy2r",
-                                   caption=f"<b>'3 Free SAT seats + 3 day SAT Marathon'</b>\n\n"
-            f"📣Farg'onadagi eng katta SAT markazlardan biri 'Master SAT'dan bomba yangilik💣💣\n\n"
-            f"<u>Bu marafondan keyin SAT balingizni bemalol 100-200 balga oshirsangiz bo'ladi.</u>💥 \n\n"
-            f"<i>Shoshmang, bu xali hammasi emas</i>\n\n"
-            f"<blockquote>3 kunlik marafonimizda har kuni bittadan FREE SAT SEAT o'ynaymiz. 💎 \nHar kunlik Masterklassdan keyin darsda qatnashgan bir kishiga o'zi xohlagan SAT imtixon sanasiga bepulga registratsiya qilib beramiz. \nBunaqasi xali O'zbekistonda bo'lmagan.</blockquote>\n\n"
-            f"Bunday imkoniyatni qo'ldan boy bermang⚡️\n\n"
+        await message.answer_photo(photo="https://imgur.com/a/PwqNLfn",
+                                   caption=f"<b>'SAT'ni Tekinga Topshiramiz 👍</b>\n\n"
+            f"14-May kuni 'Free SAT Seat + Acing the SAT' marafonida qatnashing 🔵\n\n"
+            f"<b>Quyidagilar sizni kutyabdi:</b>\n"
+            f"✅ Free SAT Seat\n"
+            f"✅ Lesson full of SAT magic\n"
+            f"✅ Tips for acing the EBRW and Math.\n\n"
+            f"<blockquote>SATni tekinga topshiring, qo'shimchasiga Expertlardan eng zo'r tiplar oling. Bunday imkoniyat qaytib bo'lmaydi 😉</blockquote>\n\n"
+            f"'Master SAT Fergana' doim sizni o'ylaydi 🤝\n\n"
             f"{invite_link}",
                                     reply_markup=builder.as_markup(), parse_mode=ParseMode.HTML)
 
@@ -178,3 +181,20 @@ class ReferralBot:
             msg += f"\n🎉 You have access to the private channel: {self.private_link}"
 
         await message.answer(text=msg, reply_markup=message.reply_markup)
+
+    async def top_referrers(self, message: types.Message):
+        top_users = await self.db.get_top_referrers()
+        
+        if not top_users:
+            await message.answer("No referrals yet! Be the first to refer someone!")
+            return
+
+        msg = "🏆 Top 10 Referrers:\n\n"
+        for i, user in enumerate(top_users, 1):
+            username = user['username'] or 'Anonymous'
+            msg += f"{i}. @{username}: {user['referral_count']} referrals"
+            if i == 1:
+                msg += " 🎁 (Free SAT Seat)"
+            msg += "\n"
+
+        await message.answer(text=msg)

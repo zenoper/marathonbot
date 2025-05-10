@@ -171,3 +171,15 @@ class Database:
                 FROM invite_links
                 WHERE invite_links.user_id = $1
             ''', user_id)
+
+    async def get_top_referrers(self, limit: int = 10) -> list:
+        async with self.pool.acquire() as conn:
+            return await conn.fetch('''
+                SELECT 
+                    u.username,
+                    u.referral_count
+                FROM users u
+                WHERE u.referral_count > 0
+                ORDER BY u.referral_count DESC
+                LIMIT $1
+            ''', limit)

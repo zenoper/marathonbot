@@ -246,17 +246,35 @@ class ReferralBot:
         response += f"Total Referrals: {user_info['referral_count']}\n\n"
         
         if referrals:
-            # If there are many referrals, just show the count and the most recent ones
-            if len(referrals) > 20:
-                response += f"Showing 10 most recent of {len(referrals)} referrals:\n\n"
-                referrals = referrals[:10]  # Only show the 10 most recent
-            else:
-                response += f"All {len(referrals)} referrals:\n\n"
-            
-            for i, ref in enumerate(referrals, 1):
-                username = ref['referred_username'] or 'Anonymous'
+            # Group referrals by minute
+            grouped_referrals = {}
+            for ref in referrals:
+                # Format timestamp to minute precision
                 timestamp = ref['created_at'].strftime('%Y-%m-%d %H:%M')
-                response += f"{i}. @{username} - {timestamp}\n"
+                if timestamp in grouped_referrals:
+                    grouped_referrals[timestamp] += 1
+                else:
+                    grouped_referrals[timestamp] = 1
+            
+            # Sort by timestamp (newest first)
+            sorted_groups = sorted(grouped_referrals.items(), key=lambda x: x[0], reverse=True)
+            
+            # If there are many time groups, just show the most active ones
+            if len(sorted_groups) > 20:
+                response += f"Showing most active times (from {len(sorted_groups)} different minutes):\n\n"
+                # Sort by number of referrals (highest first), then by time (newest first)
+                sorted_groups = sorted(sorted_groups, key=lambda x: (-x[1], -x[0]))
+                sorted_groups = sorted_groups[:20]  # Show top 20 most active minutes
+            else:
+                response += f"Referral activity by minute:\n\n"
+            
+            # Display grouped referrals
+            for timestamp, count in sorted_groups:
+                response += f"{timestamp} - {count} referrals\n"
+                
+            # Show total number of unique minutes with activity
+            if len(sorted_groups) < len(grouped_referrals):
+                response += f"\n... and {len(grouped_referrals) - len(sorted_groups)} more time periods"
         else:
             response += "No referrals found for this user."
             

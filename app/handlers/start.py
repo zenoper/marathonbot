@@ -256,25 +256,28 @@ class ReferralBot:
                 else:
                     grouped_referrals[timestamp] = 1
             
-            # Sort by timestamp (newest first)
-            sorted_groups = sorted(grouped_referrals.items(), key=lambda x: x[0], reverse=True)
+            # Convert to list of tuples for sorting
+            time_groups = list(grouped_referrals.items())
             
             # If there are many time groups, just show the most active ones
-            if len(sorted_groups) > 20:
-                response += f"Showing most active times (from {len(sorted_groups)} different minutes):\n\n"
-                # Sort by number of referrals (highest first), then by time (newest first)
-                sorted_groups = sorted(sorted_groups, key=lambda x: (-x[1], -x[0]))
-                sorted_groups = sorted_groups[:20]  # Show top 20 most active minutes
+            if len(time_groups) > 20:
+                response += f"Showing most active times (from {len(time_groups)} different minutes):\n\n"
+                # Sort primarily by count (highest first), then by timestamp (newest first)
+                time_groups.sort(key=lambda x: x[0], reverse=True)  # First by timestamp (newest first)
+                time_groups.sort(key=lambda x: x[1], reverse=True)  # Then by count (highest first)
+                time_groups = time_groups[:20]  # Show top 20 most active minutes
             else:
+                # For fewer groups, just sort by timestamp (newest first)
+                time_groups.sort(key=lambda x: x[0], reverse=True)
                 response += f"Referral activity by minute:\n\n"
             
             # Display grouped referrals
-            for timestamp, count in sorted_groups:
-                response += f"{timestamp} - {count} referrals\n"
+            for timestamp, count in time_groups:
+                response += f"{timestamp} - {count} referral{'s' if count > 1 else ''}\n"
                 
             # Show total number of unique minutes with activity
-            if len(sorted_groups) < len(grouped_referrals):
-                response += f"\n... and {len(grouped_referrals) - len(sorted_groups)} more time periods"
+            if len(time_groups) < len(grouped_referrals):
+                response += f"\n... and {len(grouped_referrals) - len(time_groups)} more time periods"
         else:
             response += "No referrals found for this user."
             

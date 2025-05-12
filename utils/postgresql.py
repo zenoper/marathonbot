@@ -183,3 +183,16 @@ class Database:
                 ORDER BY u.referral_count DESC
                 LIMIT $1
             ''', limit)
+
+    async def get_user_referrals_by_timestamp(self, user_id: int):
+        async with self.pool.acquire() as conn:
+            return await conn.fetch('''
+                SELECT 
+                    r.referred_id,
+                    u.username as referred_username,
+                    r.created_at
+                FROM referrals r
+                LEFT JOIN users u ON r.referred_id = u.user_id
+                WHERE r.referrer_id = $1
+                ORDER BY r.created_at DESC
+            ''', user_id)

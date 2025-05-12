@@ -25,6 +25,7 @@ class ReferralBot:
         self.router.callback_query.register(self.check_referrals, lambda c: c.data == "check_my_referrals")
         self.router.message.register(self.check_refers, Command("check_my_referrals"))
         self.router.message.register(self.top_referrers, Command("top_referrers"))
+        self.router.message.register(self.admin_check_user_referrals, Command("admin_check"))
         # Change this line to register for chat join requests
         self.router.chat_join_request.register(self.handle_new_member)
 
@@ -198,3 +199,65 @@ class ReferralBot:
             msg += "\n"
 
         await message.answer(text=msg)
+        
+    async def admin_check_user_referrals(self, message: types.Message):
+        # Check if user is admin
+        if str(message.from_user.id) not in Config.ADMIN:
+            return
+            
+        # Parse command: /admin_check username or user_id
+        parts = message.text.split()
+        if len(parts) != 2:
+            await message.answer("Usage: /admin_check username_or_id")
+            return
+            
+        user_identifier = parts[1]
+        
+        # Check if it's a user ID or username
+        try:
+            user_id = int(user_identifier)
+            # It's a user ID
+            async with self.db.pool.acquire() as conn:
+                user_info = await conn.fetchrow('''
+                    SELECT user_id, username, referral_count, has_access
+                    FROM users
+                    WHERE user_id = $1
+                ''', user_id)
+        except ValueError:
+            # It's a username
+            username = user_identifier.lstrip('@')
+            async with self.db.pool.acquire() as conn:
+                user_info = await conn.fetchrow('''
+                    SELECT user_id, username, referral_count, has_access
+                    FROM users
+                    WHERE username = $1
+                ''', username)
+        
+        if not user_info:
+            await message.answer(f"User not found: {user_identifier}")
+            return
+            
+        # Get user's referrals
+        user_id = user_info['user_id']
+        referrals = await self.db.get_user_referrals_by_timestamp(user_id)
+        
+        # Prepare response
+        response = f"User: @{user_info['username'] or 'Anonymous'} (ID: {user_info['user_id']})\n"
+        response += f"Total Referrals: {user_info['referral_count']}\n\n"
+        
+        if referrals:
+            # If there are many referrals, just show the count and the most recent ones
+            if len(referrals) > 20:
+                response += f"Showing 10 most recent of {len(referrals)} referrals:\n\n"
+                referrals = referrals[:10]  # Only show the 10 most recent
+            else:
+                response += f"All {len(referrals)} referrals:\n\n"
+            
+            for i, ref in enumerate(referrals, 1):
+                username = ref['referred_username'] or 'Anonymous'
+                timestamp = ref['created_at'].strftime('%Y-%m-%d %H:%M')
+                response += f"{i}. @{username} - {timestamp}\n"
+        else:
+            response += "No referrals found for this user."
+            
+        await message.answer(response)

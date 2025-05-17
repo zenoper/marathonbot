@@ -35,20 +35,20 @@ pip install -r requirements.txt
 3. Create a `.env` file with the following configuration:
 ```env
 # Bot Configuration
-BOT_TOKEN=your_bot_token_here
-MAIN_CHANNEL_ID=-1001234567890
-PRIVATE_CHANNEL_ID=-1001234567891
+BOT_TOKEN=
+MAIN_CHANNEL_ID=
+PRIVATE_CHANNEL_ID=
 REQUIRED_REFERRALS=5  # Number of referrals needed for private access
 
 # Admin Configuration
 ADMIN=["123456789"]  # List of admin user IDs
 
 # Database Configuration
-DB_HOST=localhost
+DB_HOST=
 DB_PORT=5432
-DB_NAME=your_database_name
-DB_USER=your_database_user
-DB_PASSWORD=your_database_password
+DB_NAME=
+DB_USER=
+DB_PASSWORD=
 ```
 
 4. Set up PostgreSQL database and create the required database
